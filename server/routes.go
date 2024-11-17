@@ -39,6 +39,11 @@ import (
 	"github.com/ollama/ollama/types/errtypes"
 	"github.com/ollama/ollama/types/model"
 	"github.com/ollama/ollama/version"
+
+	_ "github.com/ollama/ollama/docs" // import the docs, here TODO is my directory name
+
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var mode string = gin.DebugMode
@@ -522,6 +527,22 @@ func (s *Server) EmbeddingsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+type PullRequest struct {
+	Model    string `json:"model"`
+	Name     string `json:"name"`
+	Insecure bool   `json:"insecure"`
+	Stream   *bool  `json:"stream"`
+}
+
+// @Summary Pull Model info
+// @Description Accepts envId, gitHash, and buildAt in the request body and echoes it back
+// @Tags api
+// @Accept json
+// @Produce json
+// @Param request body PullRequest true "Pull model Request"
+// @Success 200 {object} PullRequest
+// @Failure 400 {object} map[string]string
+// @Router /api/pull [post]
 func (s *Server) PullHandler(c *gin.Context) {
 	var req api.PullRequest
 	err := c.ShouldBindJSON(&req)
@@ -1128,6 +1149,21 @@ func allowedHostsMiddleware(addr net.Addr) gin.HandlerFunc {
 	}
 }
 
+// @title TODO APIs
+// @version 1.0
+// @description Testing Swagger APIs.
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+// @securityDefinitions.apiKey JWT
+// @in header
+// @name token
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:1143
+// @BasePath /api/
+// @schemes http
 func (s *Server) GenerateRoutes() http.Handler {
 	config := cors.DefaultConfig()
 	config.AllowWildcard = true
@@ -1144,7 +1180,6 @@ func (s *Server) GenerateRoutes() http.Handler {
 		cors.New(config),
 		allowedHostsMiddleware(s.addr),
 	)
-
 	r.POST("/api/pull", s.PullHandler)
 	r.POST("/api/generate", s.GenerateHandler)
 	r.POST("/api/chat", s.ChatHandler)
@@ -1176,7 +1211,7 @@ func (s *Server) GenerateRoutes() http.Handler {
 			c.JSON(http.StatusOK, gin.H{"version": version.Version})
 		})
 	}
-
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	return r
 }
 
