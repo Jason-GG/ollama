@@ -1,4 +1,45 @@
+definitions:
+  server.PullRequest:
+    properties:
+      insecure:
+        type: boolean
+      model:
+        type: string
+      name:
+        type: string
+      stream:
+        type: boolean
+    type: object
 info:
   contact: {}
-paths: {}
+paths:
+  /api/pull:
+    post:
+      consumes:
+      - application/json
+      description: Accepts envId, gitHash, and buildAt in the request body and echoes
+        it back
+      parameters:
+      - description: Pull model Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.PullRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.PullRequest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Pull Model info
+      tags:
+      - api
 swagger: "2.0"
