@@ -69,8 +69,14 @@
 # CMD ["serve"]
 
 
+
+
 # Use the existing built image as the base for the new build
 FROM --platform=linux/amd64 570188313908.dkr.ecr.us-east-1.amazonaws.com/base-ollama:0.0.1 AS existing-build
+
+# Install Go if it's not already installed in the existing image
+RUN curl -sSL https://golang.org/dl/go1.22.8.linux-amd64.tar.gz | tar -C /usr/local -xz && \
+    ln -s /usr/local/go/bin/go /usr/bin/go
 
 # Set up necessary build environment
 ENV GOARCH amd64
