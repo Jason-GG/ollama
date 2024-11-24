@@ -1,4 +1,293 @@
 definitions:
+  api.CopyRequest:
+    properties:
+      destination:
+        type: string
+      source:
+        type: string
+    type: object
+  api.CreateRequest:
+    properties:
+      model:
+        type: string
+      modelfile:
+        type: string
+      name:
+        description: 'Deprecated: set the model name with Model instead'
+        type: string
+      path:
+        description: 'Deprecated: set the file content with Modelfile instead'
+        type: string
+      quantization:
+        description: 'Deprecated: use Quantize instead'
+        type: string
+      quantize:
+        type: string
+      stream:
+        type: boolean
+    type: object
+  api.DeleteRequest:
+    properties:
+      model:
+        type: string
+      name:
+        description: 'Deprecated: set the model name with Model instead'
+        type: string
+    type: object
+  api.ListModelResponse:
+    properties:
+      details:
+        $ref: '#/definitions/api.ModelDetails'
+      digest:
+        type: string
+      model:
+        type: string
+      modified_at:
+        type: string
+      name:
+        type: string
+      size:
+        type: integer
+    type: object
+  api.ListResponse:
+    properties:
+      models:
+        items:
+          $ref: '#/definitions/api.ListModelResponse'
+        type: array
+    type: object
+  api.ModelDetails:
+    properties:
+      families:
+        items:
+          type: string
+        type: array
+      family:
+        type: string
+      format:
+        type: string
+      parameter_size:
+        type: string
+      parent_model:
+        type: string
+      quantization_level:
+        type: string
+    type: object
+  api.ProgressResponse:
+    properties:
+      completed:
+        type: integer
+      digest:
+        type: string
+      status:
+        type: string
+      total:
+        type: integer
+    type: object
+  api.PushRequest:
+    properties:
+      insecure:
+        type: boolean
+      model:
+        type: string
+      name:
+        description: 'Deprecated: set the model name with Model instead'
+        type: string
+      password:
+        type: string
+      stream:
+        type: boolean
+      username:
+        type: string
+    type: object
+  api.ShowRequest:
+    properties:
+      model:
+        type: string
+      name:
+        description: 'Deprecated: set the model name with Model instead'
+        type: string
+      options:
+        additionalProperties: true
+        type: object
+      system:
+        type: string
+      template:
+        description: Template is deprecated
+        type: string
+      verbose:
+        type: boolean
+    type: object
+  server.ChatRequestWithDuration:
+    properties:
+      keep_alive:
+        description: Duration field as int64
+        type: string
+      messages:
+        items:
+          $ref: '#/definitions/server.Message'
+        type: array
+      model:
+        type: string
+      options:
+        additionalProperties: true
+        type: object
+      stream:
+        type: boolean
+      tools:
+        items:
+          type: string
+        type: array
+    type: object
+  server.EmbedRequest:
+    properties:
+      input:
+        description: Input is the input to embed.
+      keep_alive:
+        description: |-
+          KeepAlive controls how long the model will stay loaded in memory following
+          this request.
+        type: string
+      model:
+        description: Model is the model name.
+        type: string
+      options:
+        additionalProperties: true
+        description: Options lists model-specific options.
+        type: object
+      truncate:
+        type: boolean
+    type: object
+  server.EmbedResponse:
+    properties:
+      embeddings:
+        items:
+          items:
+            type: number
+          type: array
+        type: array
+      load_duration:
+        type: string
+      model:
+        type: string
+      prompt_eval_count:
+        type: integer
+      total_duration:
+        type: string
+    type: object
+  server.EmbeddingRequest:
+    properties:
+      keep_alive:
+        description: |-
+          KeepAlive controls how long the model will stay loaded in memory following
+          this request.
+        type: string
+      model:
+        description: Model is the model name.
+        type: string
+      options:
+        additionalProperties: true
+        description: Options lists model-specific options.
+        type: object
+      prompt:
+        description: Prompt is the textual prompt to embed.
+        type: string
+    type: object
+  server.EmbeddingResponse:
+    properties:
+      embedding:
+        items:
+          type: number
+        type: array
+    type: object
+  server.GenerateRequest:
+    properties:
+      context:
+        items:
+          type: integer
+        type: array
+      format:
+        example: json
+        type: string
+      images:
+        items:
+          items:
+            type: integer
+          type: array
+        type: array
+      keep_alive:
+        example: 60
+        type: integer
+      model:
+        example: example-model
+        type: string
+      options:
+        additionalProperties: {}
+        type: object
+      prompt:
+        example: Describe a sunset
+        type: string
+      raw:
+        example: false
+        type: boolean
+      stream:
+        example: true
+        type: boolean
+      suffix:
+        example: beautiful
+        type: string
+      system:
+        example: custom-system
+        type: string
+      template:
+        example: custom-template
+        type: string
+    type: object
+  server.GenerateResponse:
+    properties:
+      context:
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      done:
+        example: true
+        type: boolean
+      done_reason:
+        example: completed
+        type: string
+      load_duration:
+        type: integer
+      metrics:
+        $ref: '#/definitions/server.Metrics'
+      model:
+        example: example-model
+        type: string
+      response:
+        example: Here is the generated text
+        type: string
+      total_duration:
+        type: integer
+    type: object
+  server.Message:
+    properties:
+      content:
+        type: string
+      role:
+        type: string
+    type: object
+  server.Metrics:
+    properties:
+      eval_count:
+        type: integer
+      eval_duration:
+        type: integer
+      prompt_eval_count:
+        type: integer
+      prompt_eval_duration:
+        type: integer
+    type: object
   server.PullRequest:
     properties:
       insecure:
@@ -13,6 +302,287 @@ definitions:
 info:
   contact: {}
 paths:
+  /api/chat:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint processes a chat request, including optional model
+        handling, tools, and stream support.
+      parameters:
+      - description: Chat request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.ChatRequestWithDuration'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful chat response
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request due to invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Model not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle chat request
+      tags:
+      - api
+  /api/copy:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint processes a request to copy a model from a source
+        to a destination, validating the source and destination names and ensuring
+        the model exists before copying.
+      parameters:
+      - description: Copy request payload containing source and destination model
+          names
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CopyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful copy response
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request due to invalid source or destination name, or model
+            not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Model not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle model copy request
+      tags:
+      - api
+  /api/create:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint processes a create request and returns the appropriate
+        response.
+      parameters:
+      - description: Create request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful create response
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request due to invalid input or missing request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle create request
+      tags:
+      - api
+  /api/delete:
+    delete:
+      consumes:
+      - application/json
+      description: This endpoint processes a request to delete a model. It validates
+        the model's name, ensures the model exists, and removes the model and its
+        associated layers if found.
+      parameters:
+      - description: Delete request payload containing model name or model field
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.DeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful delete response
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request due to invalid model name or missing request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Model not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle model deletion request
+      tags:
+      - api
+  /api/embed:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint processes an embed request, handling errors and returning
+        appropriate responses.
+      parameters:
+      - description: Embed request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.EmbedRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful embed response
+          schema:
+            $ref: '#/definitions/server.EmbedResponse'
+        "400":
+          description: Bad request due to invalid input or missing request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle embed request
+      tags:
+      - api
+  /api/embeddings:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint processes an embeddings request and returns the embeddings
+        response.
+      parameters:
+      - description: Embedding request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.EmbeddingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful embeddings response
+          schema:
+            $ref: '#/definitions/server.EmbeddingResponse'
+        "400":
+          description: Bad request due to invalid input or missing request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle embeddings request
+      tags:
+      - api
+  /api/generate:
+    post:
+      consumes:
+      - application/json
+      description: Processes the input request, validates it, and generates a model
+        response with optional image handling.
+      parameters:
+      - description: Generate request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.GenerateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.GenerateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Generate a response
+      tags:
+      - api
   /api/pull:
     post:
       consumes:
@@ -40,6 +610,107 @@ paths:
               type: string
             type: object
       summary: Pull Model info
+      tags:
+      - api
+  /api/push:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint processes a push request for registering a model,
+        either by its name or model field, and streams progress updates.
+      parameters:
+      - description: Push request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.PushRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful push response with progress updates
+          schema:
+            $ref: '#/definitions/api.ProgressResponse'
+        "400":
+          description: Bad request due to invalid input, missing request body, or
+            missing model
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle push request for model registration
+      tags:
+      - api
+  /api/show:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint returns detailed information about a model. If the
+        model name is provided, it fetches its information, otherwise, it returns
+        an error.
+      parameters:
+      - description: Request payload containing model name or model field
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ShowRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with model information
+          schema:
+            $ref: '#/definitions/api.ModelDetails'
+        "400":
+          description: Bad request due to missing model name or invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Model not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Show model information
+      tags:
+      - api
+  /v1/models:
+    get:
+      consumes:
+      - application/json
+      description: This endpoint lists all available models, including their metadata
+        such as size, format, and modification date. If model configuration is present,
+        it is also parsed and included in the response.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with a list of models
+          schema:
+            $ref: '#/definitions/api.ListResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List all available models
       tags:
       - api
 swagger: "2.0"

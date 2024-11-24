@@ -4,6 +4,418 @@
         "contact": {}
     },
     "paths": {
+        "/api/chat": {
+            "post": {
+                "description": "This endpoint processes a chat request, including optional model handling, tools, and stream support.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Handle chat request",
+                "parameters": [
+                    {
+                        "description": "Chat request payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/server.ChatRequestWithDuration"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful chat response",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to invalid input",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Model not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/copy": {
+            "post": {
+                "description": "This endpoint processes a request to copy a model from a source to a destination, validating the source and destination names and ensuring the model exists before copying.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Handle model copy request",
+                "parameters": [
+                    {
+                        "description": "Copy request payload containing source and destination model names",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CopyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful copy response",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to invalid source or destination name, or model not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Model not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/create": {
+            "post": {
+                "description": "This endpoint processes a create request and returns the appropriate response.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Handle create request",
+                "parameters": [
+                    {
+                        "description": "Create request payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful create response",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to invalid input or missing request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/delete": {
+            "delete": {
+                "description": "This endpoint processes a request to delete a model. It validates the model's name, ensures the model exists, and removes the model and its associated layers if found.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Handle model deletion request",
+                "parameters": [
+                    {
+                        "description": "Delete request payload containing model name or model field",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.DeleteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful delete response",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to invalid model name or missing request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Model not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/embed": {
+            "post": {
+                "description": "This endpoint processes an embed request, handling errors and returning appropriate responses.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Handle embed request",
+                "parameters": [
+                    {
+                        "description": "Embed request payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/server.EmbedRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful embed response",
+                        "schema": {
+                            "$ref": "#/definitions/server.EmbedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to invalid input or missing request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/embeddings": {
+            "post": {
+                "description": "This endpoint processes an embeddings request and returns the embeddings response.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Handle embeddings request",
+                "parameters": [
+                    {
+                        "description": "Embedding request payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/server.EmbeddingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful embeddings response",
+                        "schema": {
+                            "$ref": "#/definitions/server.EmbeddingResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to invalid input or missing request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/generate": {
+            "post": {
+                "description": "Processes the input request, validates it, and generates a model response with optional image handling.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Generate a response",
+                "parameters": [
+                    {
+                        "description": "Generate request payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/server.GenerateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/server.GenerateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/pull": {
             "post": {
                 "description": "Accepts envId, gitHash, and buildAt in the request body and echoes it back",
@@ -46,9 +458,574 @@
                     }
                 }
             }
+        },
+        "/api/push": {
+            "post": {
+                "description": "This endpoint processes a push request for registering a model, either by its name or model field, and streams progress updates.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Handle push request for model registration",
+                "parameters": [
+                    {
+                        "description": "Push request payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.PushRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful push response with progress updates",
+                        "schema": {
+                            "$ref": "#/definitions/api.ProgressResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to invalid input, missing request body, or missing model",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/show": {
+            "post": {
+                "description": "This endpoint returns detailed information about a model. If the model name is provided, it fetches its information, otherwise, it returns an error.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "Show model information",
+                "parameters": [
+                    {
+                        "description": "Request payload containing model name or model field",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.ShowRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response with model information",
+                        "schema": {
+                            "$ref": "#/definitions/api.ModelDetails"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to missing model name or invalid request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Model not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/models": {
+            "get": {
+                "description": "This endpoint lists all available models, including their metadata such as size, format, and modification date. If model configuration is present, it is also parsed and included in the response.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "api"
+                ],
+                "summary": "List all available models",
+                "responses": {
+                    "200": {
+                        "description": "Successful response with a list of models",
+                        "schema": {
+                            "$ref": "#/definitions/api.ListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "api.CopyRequest": {
+            "type": "object",
+            "properties": {
+                "destination": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string"
+                },
+                "modelfile": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Deprecated: set the model name with Model instead",
+                    "type": "string"
+                },
+                "path": {
+                    "description": "Deprecated: set the file content with Modelfile instead",
+                    "type": "string"
+                },
+                "quantization": {
+                    "description": "Deprecated: use Quantize instead",
+                    "type": "string"
+                },
+                "quantize": {
+                    "type": "string"
+                },
+                "stream": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "api.DeleteRequest": {
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Deprecated: set the model name with Model instead",
+                    "type": "string"
+                }
+            }
+        },
+        "api.ListModelResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "$ref": "#/definitions/api.ModelDetails"
+                },
+                "digest": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "modified_at": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "api.ListResponse": {
+            "type": "object",
+            "properties": {
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.ListModelResponse"
+                    }
+                }
+            }
+        },
+        "api.ModelDetails": {
+            "type": "object",
+            "properties": {
+                "families": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "family": {
+                    "type": "string"
+                },
+                "format": {
+                    "type": "string"
+                },
+                "parameter_size": {
+                    "type": "string"
+                },
+                "parent_model": {
+                    "type": "string"
+                },
+                "quantization_level": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.ProgressResponse": {
+            "type": "object",
+            "properties": {
+                "completed": {
+                    "type": "integer"
+                },
+                "digest": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "api.PushRequest": {
+            "type": "object",
+            "properties": {
+                "insecure": {
+                    "type": "boolean"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Deprecated: set the model name with Model instead",
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "stream": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.ShowRequest": {
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Deprecated: set the model name with Model instead",
+                    "type": "string"
+                },
+                "options": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "system": {
+                    "type": "string"
+                },
+                "template": {
+                    "description": "Template is deprecated",
+                    "type": "string"
+                },
+                "verbose": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "server.ChatRequestWithDuration": {
+            "type": "object",
+            "properties": {
+                "keep_alive": {
+                    "description": "Duration field as int64",
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/server.Message"
+                    }
+                },
+                "model": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "stream": {
+                    "type": "boolean"
+                },
+                "tools": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "server.EmbedRequest": {
+            "type": "object",
+            "properties": {
+                "input": {
+                    "description": "Input is the input to embed."
+                },
+                "keep_alive": {
+                    "description": "KeepAlive controls how long the model will stay loaded in memory following\nthis request.",
+                    "type": "string"
+                },
+                "model": {
+                    "description": "Model is the model name.",
+                    "type": "string"
+                },
+                "options": {
+                    "description": "Options lists model-specific options.",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "truncate": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "server.EmbedResponse": {
+            "type": "object",
+            "properties": {
+                "embeddings": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    }
+                },
+                "load_duration": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "prompt_eval_count": {
+                    "type": "integer"
+                },
+                "total_duration": {
+                    "type": "string"
+                }
+            }
+        },
+        "server.EmbeddingRequest": {
+            "type": "object",
+            "properties": {
+                "keep_alive": {
+                    "description": "KeepAlive controls how long the model will stay loaded in memory following\nthis request.",
+                    "type": "string"
+                },
+                "model": {
+                    "description": "Model is the model name.",
+                    "type": "string"
+                },
+                "options": {
+                    "description": "Options lists model-specific options.",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "prompt": {
+                    "description": "Prompt is the textual prompt to embed.",
+                    "type": "string"
+                }
+            }
+        },
+        "server.EmbeddingResponse": {
+            "type": "object",
+            "properties": {
+                "embedding": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            }
+        },
+        "server.GenerateRequest": {
+            "type": "object",
+            "properties": {
+                "context": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "format": {
+                    "type": "string",
+                    "example": "json"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "keep_alive": {
+                    "type": "integer",
+                    "example": 60
+                },
+                "model": {
+                    "type": "string",
+                    "example": "example-model"
+                },
+                "options": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "prompt": {
+                    "type": "string",
+                    "example": "Describe a sunset"
+                },
+                "raw": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "stream": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "suffix": {
+                    "type": "string",
+                    "example": "beautiful"
+                },
+                "system": {
+                    "type": "string",
+                    "example": "custom-system"
+                },
+                "template": {
+                    "type": "string",
+                    "example": "custom-template"
+                }
+            }
+        },
+        "server.GenerateResponse": {
+            "type": "object",
+            "properties": {
+                "context": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "done": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "done_reason": {
+                    "type": "string",
+                    "example": "completed"
+                },
+                "load_duration": {
+                    "type": "integer"
+                },
+                "metrics": {
+                    "$ref": "#/definitions/server.Metrics"
+                },
+                "model": {
+                    "type": "string",
+                    "example": "example-model"
+                },
+                "response": {
+                    "type": "string",
+                    "example": "Here is the generated text"
+                },
+                "total_duration": {
+                    "type": "integer"
+                }
+            }
+        },
+        "server.Message": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "server.Metrics": {
+            "type": "object",
+            "properties": {
+                "eval_count": {
+                    "type": "integer"
+                },
+                "eval_duration": {
+                    "type": "integer"
+                },
+                "prompt_eval_count": {
+                    "type": "integer"
+                },
+                "prompt_eval_duration": {
+                    "type": "integer"
+                }
+            }
+        },
         "server.PullRequest": {
             "type": "object",
             "properties": {

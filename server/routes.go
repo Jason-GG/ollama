@@ -115,6 +115,54 @@ func (s *Server) scheduleRunner(ctx context.Context, name string, caps []Capabil
 	return runner.llama, model, &opts, nil
 }
 
+// GenerateRequest represents the input payload
+type GenerateRequest struct {
+	Model     string         `json:"model" example:"example-model"`
+	Prompt    string         `json:"prompt" example:"Describe a sunset"`
+	Suffix    string         `json:"suffix,omitempty" example:"beautiful"`
+	Format    string         `json:"format,omitempty" example:"json"`
+	Raw       bool           `json:"raw" example:"false"`
+	Template  string         `json:"template,omitempty" example:"custom-template"`
+	System    string         `json:"system,omitempty" example:"custom-system"`
+	Context   []byte         `json:"context,omitempty"`
+	Images    [][]byte       `json:"images,omitempty"`
+	KeepAlive *time.Duration `json:"keep_alive,omitempty" example:"60" swaggertype:"integer"`
+	Options   map[string]any `json:"options,omitempty"`
+	Stream    *bool          `json:"stream,omitempty" example:"true"`
+}
+
+// GenerateResponse represents the response payload
+type GenerateResponse struct {
+	Model         string        `json:"model" example:"example-model"`
+	CreatedAt     time.Time     `json:"created_at"`
+	Response      string        `json:"response,omitempty" example:"Here is the generated text"`
+	Done          bool          `json:"done" example:"true"`
+	DoneReason    string        `json:"done_reason,omitempty" example:"completed"`
+	TotalDuration time.Duration `json:"total_duration,omitempty" swaggertype:"integer"`
+	LoadDuration  time.Duration `json:"load_duration,omitempty" swaggertype:"integer"`
+	Context       []string      `json:"context,omitempty"`
+	Metrics       Metrics       `json:"metrics,omitempty"`
+}
+
+// Metrics represents additional details about the operation
+type Metrics struct {
+	PromptEvalCount    int           `json:"prompt_eval_count,omitempty"`
+	PromptEvalDuration time.Duration `json:"prompt_eval_duration,omitempty" swaggertype:"integer"`
+	EvalCount          int           `json:"eval_count,omitempty"`
+	EvalDuration       time.Duration `json:"eval_duration,omitempty" swaggertype:"integer"`
+}
+
+// @Summary      Generate a response
+// @Description  Processes the input request, validates it, and generates a model response with optional image handling.
+// @Tags         api
+// @Accept       json
+// @Produce      json
+// @Param        request  body  GenerateRequest  true  "Generate request payload"
+// @Success      200   {object}  GenerateResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      404   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /api/generate   [post]
 func (s *Server) GenerateHandler(c *gin.Context) {
 	checkpointStart := time.Now()
 	var req api.GenerateRequest
@@ -353,6 +401,42 @@ func (s *Server) GenerateHandler(c *gin.Context) {
 	streamResponse(c, ch)
 }
 
+type EmbedResponse struct {
+	Model      string      `json:"model"`
+	Embeddings [][]float32 `json:"embeddings"`
+
+	TotalDuration   string `json:"total_duration,omitempty"`
+	LoadDuration    string `json:"load_duration,omitempty"`
+	PromptEvalCount int    `json:"prompt_eval_count,omitempty"`
+}
+
+type EmbedRequest struct {
+	// Model is the model name.
+	Model string `json:"model"`
+
+	// Input is the input to embed.
+	Input any `json:"input"`
+
+	// KeepAlive controls how long the model will stay loaded in memory following
+	// this request.
+	KeepAlive string `json:"keep_alive,omitempty"`
+
+	Truncate *bool `json:"truncate,omitempty"`
+
+	// Options lists model-specific options.
+	Options map[string]interface{} `json:"options"`
+}
+
+// @Summary      Handle embed request
+// @Description  This endpoint processes an embed request, handling errors and returning appropriate responses.
+// @Tags         api
+// @Accept       json
+// @Produce      json
+// @Param        request  body  EmbedRequest  true  "Embed request payload"
+// @Success      200     {object}  EmbedResponse  "Successful embed response"
+// @Failure      400     {object}  map[string]string  "Bad request due to invalid input or missing request body"
+// @Failure      500     {object}  map[string]string  "Internal server error"
+// @Router       /api/embed   [post]
 func (s *Server) EmbedHandler(c *gin.Context) {
 	checkpointStart := time.Now()
 	var req api.EmbedRequest
@@ -487,6 +571,35 @@ func normalize(vec []float32) []float32 {
 	return vec
 }
 
+type EmbeddingRequest struct {
+	// Model is the model name.
+	Model string `json:"model"`
+
+	// Prompt is the textual prompt to embed.
+	Prompt string `json:"prompt"`
+
+	// KeepAlive controls how long the model will stay loaded in memory following
+	// this request.
+	KeepAlive string `json:"keep_alive,omitempty"`
+
+	// Options lists model-specific options.
+	Options map[string]interface{} `json:"options"`
+}
+
+type EmbeddingResponse struct {
+	Embedding []float64 `json:"embedding"`
+}
+
+// @Summary      Handle embeddings request
+// @Description  This endpoint processes an embeddings request and returns the embeddings response.
+// @Tags         api
+// @Accept       json
+// @Produce      json
+// @Param        request  body  EmbeddingRequest  true  "Embedding request payload"
+// @Success      200     {object}  EmbeddingResponse  "Successful embeddings response"
+// @Failure      400     {object}  map[string]string  "Bad request due to invalid input or missing request body"
+// @Failure      500     {object}  map[string]string  "Internal server error"
+// @Router       /api/embeddings   [post]
 func (s *Server) EmbeddingsHandler(c *gin.Context) {
 	var req api.EmbeddingRequest
 	if err := c.ShouldBindJSON(&req); errors.Is(err, io.EOF) {
@@ -593,6 +706,16 @@ func (s *Server) PullHandler(c *gin.Context) {
 	streamResponse(c, ch)
 }
 
+// @Summary      Handle push request for model registration
+// @Description  This endpoint processes a push request for registering a model, either by its name or model field, and streams progress updates.
+// @Tags         api
+// @Accept       json
+// @Produce      json
+// @Param        request  body  api.PushRequest  true  "Push request payload"
+// @Success      200     {object}  api.ProgressResponse  "Successful push response with progress updates"
+// @Failure      400     {object}  map[string]string  "Bad request due to invalid input, missing request body, or missing model"
+// @Failure      500     {object}  map[string]string  "Internal server error"
+// @Router       /api/push   [post]
 func (s *Server) PushHandler(c *gin.Context) {
 	var req api.PushRequest
 	err := c.ShouldBindJSON(&req)
@@ -657,6 +780,16 @@ func checkNameExists(name model.Name) error {
 	return nil
 }
 
+// @Summary      Handle create request
+// @Description  This endpoint processes a create request and returns the appropriate response.
+// @Tags         api
+// @Accept       json
+// @Produce      json
+// @Param        request  body  api.CreateRequest  true  "Create request payload"
+// @Success      200     {object}  map[string]string  "Successful create response"
+// @Failure      400     {object}  map[string]string  "Bad request due to invalid input or missing request body"
+// @Failure      500     {object}  map[string]string  "Internal server error"
+// @Router       /api/create   [post]
 func (s *Server) CreateHandler(c *gin.Context) {
 	var r api.CreateRequest
 	if err := c.ShouldBindJSON(&r); errors.Is(err, io.EOF) {
@@ -727,6 +860,17 @@ func (s *Server) CreateHandler(c *gin.Context) {
 	streamResponse(c, ch)
 }
 
+// @Summary      Handle model deletion request
+// @Description  This endpoint processes a request to delete a model. It validates the model's name, ensures the model exists, and removes the model and its associated layers if found.
+// @Tags         api
+// @Accept       json
+// @Produce      json
+// @Param        request  body  api.DeleteRequest  true  "Delete request payload containing model name or model field"
+// @Success      200     {object}  map[string]string  "Successful delete response"
+// @Failure      400     {object}  map[string]string  "Bad request due to invalid model name or missing request body"
+// @Failure      404     {object}  map[string]string  "Model not found"
+// @Failure      500     {object}  map[string]string  "Internal server error"
+// @Router       /api/delete   [delete]
 func (s *Server) DeleteHandler(c *gin.Context) {
 	var r api.DeleteRequest
 	if err := c.ShouldBindJSON(&r); errors.Is(err, io.EOF) {
@@ -765,6 +909,17 @@ func (s *Server) DeleteHandler(c *gin.Context) {
 	}
 }
 
+// @Summary      Show model information
+// @Description  This endpoint returns detailed information about a model. If the model name is provided, it fetches its information, otherwise, it returns an error.
+// @Tags         api
+// @Accept       json
+// @Produce      json
+// @Param        request  body  api.ShowRequest  true  "Request payload containing model name or model field"
+// @Success      200     {object}  api.ModelDetails  "Successful response with model information"
+// @Failure      400     {object}  map[string]string  "Bad request due to missing model name or invalid request body"
+// @Failure      404     {object}  map[string]string  "Model not found"
+// @Failure      500     {object}  map[string]string  "Internal server error"
+// @Router       /api/show   [post]
 func (s *Server) ShowHandler(c *gin.Context) {
 	var req api.ShowRequest
 	err := c.ShouldBindJSON(&req)
@@ -914,6 +1069,14 @@ func getKVData(digest string, verbose bool) (llm.KV, error) {
 	return kv, nil
 }
 
+// @Summary      List all available models
+// @Description  This endpoint lists all available models, including their metadata such as size, format, and modification date. If model configuration is present, it is also parsed and included in the response.
+// @Tags         api
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  api.ListResponse  "Successful response with a list of models"
+// @Failure      500  {object}  map[string]string  "Internal server error"
+// @Router       /v1/models   [get]
 func (s *Server) ListHandler(c *gin.Context) {
 	ms, err := Manifests(true)
 	if err != nil {
@@ -964,6 +1127,17 @@ func (s *Server) ListHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, api.ListResponse{Models: models})
 }
 
+// @Summary      Handle model copy request
+// @Description  This endpoint processes a request to copy a model from a source to a destination, validating the source and destination names and ensuring the model exists before copying.
+// @Tags         api
+// @Accept       json
+// @Produce      json
+// @Param        request  body  api.CopyRequest  true  "Copy request payload containing source and destination model names"
+// @Success      200     {object}  map[string]string  "Successful copy response"
+// @Failure      400     {object}  map[string]string  "Bad request due to invalid source or destination name, or model not found"
+// @Failure      404     {object}  map[string]string  "Model not found"
+// @Failure      500     {object}  map[string]string  "Internal server error"
+// @Router       /api/copy   [post]
 func (s *Server) CopyHandler(c *gin.Context) {
 	var r api.CopyRequest
 	if err := c.ShouldBindJSON(&r); errors.Is(err, io.EOF) {
@@ -1149,21 +1323,6 @@ func allowedHostsMiddleware(addr net.Addr) gin.HandlerFunc {
 	}
 }
 
-// @title TODO APIs
-// @version 1.0
-// @description Testing Swagger APIs.
-// @termsOfService http://swagger.io/terms/
-// @contact.name API Support
-// @contact.url http://www.swagger.io/support
-// @contact.email support@swagger.io
-// @securityDefinitions.apiKey JWT
-// @in header
-// @name token
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @host localhost:1143
-// @BasePath /api/
-// @schemes http
 func (s *Server) GenerateRoutes() http.Handler {
 	config := cors.DefaultConfig()
 	config.AllowWildcard = true
@@ -1413,6 +1572,32 @@ func (s *Server) PsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, api.ProcessResponse{Models: models})
 }
 
+type ChatRequestWithDuration struct {
+	Model     string                 `json:"model"`
+	Messages  []Message              `json:"messages"`
+	Tools     []string               `json:"tools,omitempty"`
+	Options   map[string]interface{} `json:"options,omitempty"`
+	KeepAlive string                 `json:"keep_alive,omitempty"` // Duration field as int64
+	Stream    *bool                  `json:"stream,omitempty"`
+}
+
+// Message represents a message object
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+// @Summary      Handle chat request
+// @Description  This endpoint processes a chat request, including optional model handling, tools, and stream support.
+// @Tags         api
+// @Accept       json
+// @Produce      json
+// @Param        request  body  ChatRequestWithDuration   true  "Chat request payload"
+// @Success      200     {object}  map[string]string  "Successful chat response"
+// @Failure      400     {object}  map[string]string  "Bad request due to invalid input"
+// @Failure      404     {object}  map[string]string  "Model not found"
+// @Failure      500     {object}  map[string]string  "Internal server error"
+// @Router       /api/chat   [post]
 func (s *Server) ChatHandler(c *gin.Context) {
 	checkpointStart := time.Now()
 
